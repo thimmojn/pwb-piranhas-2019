@@ -6,41 +6,63 @@ import asyncio, logging, lxml.etree
 from lxml.builder import E
 
 
-class PiranhasProtocol(asyncio.Protocol):
-    def __init__(self, loop, room=None):
-        self.transport = None
-        self.loop = loop
-        self.room = room
+def sendXML(writer, message):
+    writer.write(lxml.etree.tostring(message))
 
-    def connection_made(self, transport):
-        # connected to gameserver
-        logging.debug('connected to gameserver')
-        self.transport = transport
-        self.data_send(b'<protocol>')
-        if self.room is not None:
-            self.message_send(E.joined(roomId=self.room))
-        else:
-            self.message_send(E.join(gameType='swc_2019_piranhas'))
 
-    def data_received(self, data):
-        # data from gameserver
-        logging.debug('received data from gameserver')
-        logging.debug(data.decode())
-        withoutEndProtocol = data.replace(b'</protocol>', b'')
-        xmlWrapped = b''.join([b'<gsm>', withoutEndProtocol, b'</gsm>'])
-        xmlParsed = lxml.etree.fromstring(xmlWrapped)
-        for message in xmlParsed:
-            self.message_received(message)
+@asyncio.coroutine
+def PiranhasClient(loop, host, port, reservation=None):
+    room = None
 
-    def data_send(self, data):
-        self.transport.write(data)
+    # build join message
+    if reservation is not None:
+        # join to existing room by reservation
+        joinMessage = E.joinedPrepared(reservationCode=reservation)
+    else:
+        # join to existing game or create a new one
+        joinMessage = E.join(gameType='swc_2019_piranhas')
 
-    def message_received(self, message):
-        logging.debug('received message from gameserver')
+    # connect to gameserver
+    reader, writer = yield from asyncio.open_connection(host, port, loop=loop)
+    logging.info('connected to gameserver')
 
-    def message_send(self, message):
-        self.data_send(lxml.etree.tostring(message))
+    logging.info('join game')
+    # initiate communication
+    writer.write(b'<protocol>')
+    # and join
+    sendXML(writer, joinMessage)
 
-    def connection_lost(self, exc):
-        logging.debug('connection to gameserver lost - %s', 'regular close' if exc is None else 'error')
-        self.loop.stop()
+    logging.info('enter communication loop')
+    # communication loop
+    parser = lxml.etree.XMLPullParser(events=('end',))
+    while not reader.at_eof():
+        # read next tag
+        data = yield from reader.readuntil(b'>')
+        logging.debug('get: %s', data.decode())
+        # feed to XML parser
+        parser.feed(data)
+        # check for XML parser events,
+        # must be a close event
+        event = next(parser.read_events(), None)
+        if event is not None:
+            # closed element
+            element = event[1]
+            logging.debug('XML tag closed: %s', element.tag)
+            if element.tag == 'joined':
+                # joined event
+                if room is not None:
+                    logging.warning('unexpected joined event, ignore it')
+                else:
+                    # save room identifier
+                    room = element.get('roomId')
+                    logging.info('joined room %s', room)
+                element.clear()
+            elif element.tag == 'protocol':
+                # communication end
+                logging.info('gameserver send goodbye')
+            elif element.tag == 'room':
+                # game events
+                print(element)
+                element.clear()
+    # server closed communication, close parser
+    parser.close()
