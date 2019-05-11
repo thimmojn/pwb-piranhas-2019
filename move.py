@@ -22,6 +22,7 @@ class Move:
         self.x = x
         self.y = y
         self.direction = direction
+        self.hints = []
 
     @classmethod
     def fromXML(cls, dataNode):
@@ -32,7 +33,19 @@ class Move:
         )
 
     def toXML(self):
-        return E.data({ 'class': 'move', 'x': str(self.x), 'y': str(self.y), 'direction': self.direction.value })
+        moveNode = E.data({
+            'class': 'move',
+            'x': str(self.x),
+            'y': str(self.y),
+            'direction': self.direction.value
+        })
+        for hint in self.hints:
+            moveNode.append(E.hint(content=hint))
+        return moveNode
+
+    def addHint(self, content):
+        self.hints.append(content)
+        return self
 
     def __repr__(self):
         return '({},{}) -> {}'.format(self.x, self.y, self.direction.name)
