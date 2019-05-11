@@ -1,5 +1,4 @@
 import enum, lxml.etree
-from lxml.builder import E
 
 """
 Board of Piranhas game.
