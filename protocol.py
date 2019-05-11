@@ -67,7 +67,7 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
                 # matches room identifier?
                 if element.get('roomId') == room:
                     # game events
-                    dataNode = element.get('data')
+                    dataNode = element.find('data')
                     dataClass = dataNode.get('class')
                     if dataClass == 'sc.framework.plugins.protocol.MoveRequest':
                         # move request
