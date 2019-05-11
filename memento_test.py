@@ -26,7 +26,7 @@ def test_memento_from_official_doc():
     assert memento.currentPlayer is Player.Red
     assert memento.playerNames[Player.Red] == 'Unknown'
     assert memento.playerNames[Player.Blue] == 'Unknown'
-    assert repr(memento.board) == '\n'.join(' '.join(10 * [' ']) for _ in range(10))
+    assert repr(memento.board) == '\n'.join(''.join(10 * ['_']) for _ in range(10))
     assert memento.lastMove is None
 
 # -*- encoding: utf-8-unix -*-

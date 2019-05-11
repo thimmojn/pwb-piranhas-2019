@@ -19,10 +19,12 @@ def createSimpleBoard():
 def test_basic():
     b = createSimpleBoard()
 
-    expected = """  B B  
-R   O R
-R     R
-  B B  """
+    expected = """
+_BB_
+R_OR
+R__R
+_BB_
+""".strip()
 
     assert repr(b) == expected
 
@@ -55,10 +57,12 @@ def test_xml():
 </board>""")
     b = Board.fromXML(boardXML)
 
-    expected = """  B B  
-R   O R
-R     R
-  B B  """
+    expected = """
+_BB_
+R_OR
+R__R
+_BB_
+""".strip()
 
     assert repr(b) == expected
 

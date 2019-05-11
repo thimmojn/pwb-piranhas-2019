@@ -20,7 +20,7 @@ class FieldState(enum.Enum):
 
     def asChar(self):
         if self is FieldState.Empty:
-            return ' '
+            return '_'
         elif self is FieldState.Red:
             return 'R'
         elif self is FieldState.Blue:
@@ -120,6 +120,6 @@ class Board:
         return list(filter(partial(self.movePossible, x, y), MoveDirection))
 
     def __repr__(self):
-        return "\n".join(" ".join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
+        return '\n'.join(''.join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
 
 # -*- encoding: utf-8-unix -*-
