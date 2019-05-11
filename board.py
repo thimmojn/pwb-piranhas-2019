@@ -25,7 +25,7 @@ class FieldState(enum.Enum):
             raise ValueError('no character for {} given'.format(self.name))
 
 
-class PiranhasBoard:
+class Board:
     def __init__(self, columns, rows):
         self.fields = [[FieldState.Empty for y in range(rows)] for x in range(columns)]
 

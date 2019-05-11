@@ -1,9 +1,9 @@
 import lxml.etree
-from board import PiranhasBoard, FieldState
+from board import Board, FieldState
 
 
 def test_basic():
-    b = PiranhasBoard(4, 4)
+    b = Board(4, 4)
     b.set(1, 0, FieldState.Blue)
     b.set(2, 0, FieldState.Blue)
     b.set(1, 3, FieldState.Blue)
@@ -48,7 +48,7 @@ def test_xml():
     <field x="3" y="3" state="EMPTY" />
   </fields>
 </board>""")
-    b = PiranhasBoard.fromXML(boardXML)
+    b = Board.fromXML(boardXML)
 
     expected = """  B B  
 R   O R
