@@ -14,21 +14,25 @@ class FieldState(enum.Enum):
     Blue = 'BLUE'
     Obstructed = 'OBSTRUCTED'
 
+    @classmethod
+    def byChar(cls, char):
+        return next(f for (f, c) in FieldStateCharMapping.items() if c == char)
+
+    @property
+    def char(self):
+        return FieldStateCharMapping.get(self)
+
     def occupiedBy(self, player):
         return (player is not None and self is FieldState(player.value)) \
             or (player is None and self in {FieldState.Red, FieldState.Blue})
 
-    def asChar(self):
-        if self is FieldState.Empty:
-            return '_'
-        elif self is FieldState.Red:
-            return 'R'
-        elif self is FieldState.Blue:
-            return 'B'
-        elif self is FieldState.Obstructed:
-            return 'O'
-        else:
-            raise ValueError('no character for {} given'.format(self.name))
+# assign field state a character (for testing and debugging)
+FieldStateCharMapping = {
+    FieldState.Empty:      '_',
+    FieldState.Red:        'R',
+    FieldState.Blue:       'B',
+    FieldState.Obstructed: 'O'
+}
 
 
 class Board:
@@ -49,14 +53,23 @@ class Board:
         columns = max(int(n.get('x')) for n in iterFields(boardNode)) + 1
         rows = max(int(n.get('y')) for n in iterFields(boardNode)) + 1
         board = cls(columns, rows)
-
         for fieldNode in iterFields(boardNode):
             board.set(
                 int(fieldNode.get('x')),
                 int(fieldNode.get('y')),
                 FieldState(fieldNode.get('state'))
             )
+        return board
 
+    @classmethod
+    def fromString(cls, boardString):
+        fields = boardString.split('\n')
+        columns = len(fields[0])
+        rows = len(fields)
+        board = cls(columns, rows)
+        for x in range(columns):
+            for y in range(rows):
+                board.set(x, y, FieldState.byChar(fields[rows - y - 1][x]))
         return board
 
     def isValidCoordinate(self, x, y):
@@ -120,6 +133,6 @@ class Board:
         return list(filter(partial(self.movePossible, x, y), MoveDirection))
 
     def __repr__(self):
-        return '\n'.join(''.join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
+        return '\n'.join(''.join(self.get(x, y).char for x in range(self.columns)) for y in reversed(range(self.rows)))
 
 # -*- encoding: utf-8-unix -*-

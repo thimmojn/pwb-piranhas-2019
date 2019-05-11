@@ -4,6 +4,15 @@ from player import Player
 
 
 def createSimpleBoard():
+    boardString = """
+_BB_
+R_OR
+R__R
+_BB_
+""".strip()
+    return Board.fromString(boardString), boardString
+
+def test_basic():
     b = Board(4, 4)
     b.set(1, 0, FieldState.Blue)
     b.set(2, 0, FieldState.Blue)
@@ -14,10 +23,6 @@ def createSimpleBoard():
     b.set(3, 1, FieldState.Red)
     b.set(3, 2, FieldState.Red)
     b.set(2, 2, FieldState.Obstructed)
-    return b
-
-def test_basic():
-    b = createSimpleBoard()
 
     expected = """
 _BB_
@@ -27,6 +32,10 @@ _BB_
 """.strip()
 
     assert repr(b) == expected
+
+def test_from_string():
+    b, boardString = createSimpleBoard()
+    assert repr(b) == boardString
 
 def test_xml():
     boardXML = lxml.etree.XML("""<board>
@@ -67,7 +76,7 @@ _BB_
     assert repr(b) == expected
 
 def test_valid_coordinate():
-    b = createSimpleBoard()
+    b, _ = createSimpleBoard()
     assert b.isValidCoordinate(1, 2)
     assert b.isValidCoordinate(0, 0)
     assert b.isValidCoordinate(3, 3)
@@ -75,7 +84,7 @@ def test_valid_coordinate():
     assert b.isValidCoordinate(3, 0)
 
 def test_invalid_coordinate():
-    b = createSimpleBoard()
+    b, _ = createSimpleBoard()
     assert not b.isValidCoordinate(-1, 2)
     assert not b.isValidCoordinate(1, -2)
     assert not b.isValidCoordinate(4, 2)
@@ -84,15 +93,15 @@ def test_invalid_coordinate():
     assert not b.isValidCoordinate(6, 4)
 
 def test_fish_count_all():
-    b = createSimpleBoard()
+    b, _ = createSimpleBoard()
     assert b.fishCount() == 8
 
 def test_fish_count_red():
-    b = createSimpleBoard()
+    b, _ = createSimpleBoard()
     assert b.fishCount(Player.Red) == 4
 
 def test_fish_count_blue():
-    b = createSimpleBoard()
+    b, _ = createSimpleBoard()
     assert b.fishCount(Player.Blue) == 4
 
 # -*- encoding: utf-8-unix -*-
