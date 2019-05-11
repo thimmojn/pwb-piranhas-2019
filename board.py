@@ -3,6 +3,7 @@
 """Board of Piranhas game."""
 
 import enum, lxml.etree
+from lxml.builder import E
 
 
 class FieldState(enum.Enum):
@@ -51,14 +52,17 @@ class PiranhasBoard:
 
     @classmethod
     def fromXML(cls, boardNode):
-        maxX = lxml.etree.XPath('max(fields/field/@x)')
-        maxY = lxml.etree.XPath('max(fields/field/@y)')
         iterFields = lxml.etree.XPath('fields/field')
-
-        board = cls(maxX(boardNode) + 1, maxY(boardNode) + 1)
+        columns = max(int(n.get('x')) for n in iterFields(boardNode)) + 1
+        rows = max(int(n.get('y')) for n in iterFields(boardNode)) + 1
+        board = cls(columns, rows)
 
         for fieldNode in iterFields(boardNode):
-            board.set(fieldNode.get('x'), fieldNode.get('y'), FieldState.fromString(fieldNode.get('state')))
+            board.set(
+                int(fieldNode.get('x')),
+                int(fieldNode.get('y')),
+                FieldState.fromString(fieldNode.get('state'))
+            )
 
         return board
 
