@@ -53,6 +53,9 @@ class Board:
 
         return board
 
+    def isValidCoordinate(self, x, y):
+        return x >= 0 and x < self.columns and y >= 0 and y < self.rows
+
     def get(self, x, y):
         return self.fields[x][y]
 

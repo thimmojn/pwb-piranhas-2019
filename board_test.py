@@ -62,6 +62,23 @@ R     R
 
     assert repr(b) == expected
 
+def test_valid_coordinate():
+    b = createSimpleBoard()
+    assert b.isValidCoordinate(1, 2)
+    assert b.isValidCoordinate(0, 0)
+    assert b.isValidCoordinate(3, 3)
+    assert b.isValidCoordinate(0, 3)
+    assert b.isValidCoordinate(3, 0)
+
+def test_invalid_coordinate():
+    b = createSimpleBoard()
+    assert not b.isValidCoordinate(-1, 2)
+    assert not b.isValidCoordinate(1, -2)
+    assert not b.isValidCoordinate(4, 2)
+    assert not b.isValidCoordinate(1, 5)
+    assert not b.isValidCoordinate(-2, -1)
+    assert not b.isValidCoordinate(6, 4)
+
 def test_fish_count_all():
     b = createSimpleBoard()
     assert b.fishCount() == 8
