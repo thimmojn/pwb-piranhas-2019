@@ -1,9 +1,9 @@
-# -*- encoding: utf-8-unix -*-
-
-"""Board of Piranhas game."""
-
 import enum, lxml.etree
 from lxml.builder import E
+
+"""
+Board of Piranhas game.
+"""
 
 
 class FieldState(enum.Enum):
@@ -64,3 +64,5 @@ class PiranhasBoard:
 
     def __repr__(self):
         return "\n".join(" ".join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
+
+# -*- encoding: utf-8-unix -*-

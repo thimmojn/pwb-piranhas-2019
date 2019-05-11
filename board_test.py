@@ -1,5 +1,3 @@
-# -*- encoding: utf-8-unix -*-
-
 import lxml.etree
 from board import PiranhasBoard, FieldState
 
@@ -58,3 +56,5 @@ R     R
   B B  """
 
     assert repr(b) == expected
+
+# -*- encoding: utf-8-unix -*-
