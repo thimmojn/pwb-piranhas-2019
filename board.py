@@ -113,8 +113,12 @@ class Board:
         # calculate target coordinates given by steps in direction
         target = (x + steps * directionShift[0], y + steps * directionShift[1])
 
-        # check if move ends outside board or on a field with an obstructed
-        if not self.isValidCoordinate(*target) or self.get(*target) is FieldState.Obstructed:
+        # check if move ends outside board
+        # or on a field with an obstructed
+        # or on a field with an own fish
+        if not self.isValidCoordinate(*target) \
+           or self.get(*target) is FieldState.Obstructed \
+           or self.get(*target) is self.get(x, y):
             return False
 
         # check if there is a enemy fish in the way
