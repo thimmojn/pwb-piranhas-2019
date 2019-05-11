@@ -1,8 +1,9 @@
 import lxml.etree
 from board import Board, FieldState
+from player import Player
 
 
-def test_basic():
+def createSimpleBoard():
     b = Board(4, 4)
     b.set(1, 0, FieldState.Blue)
     b.set(2, 0, FieldState.Blue)
@@ -13,6 +14,10 @@ def test_basic():
     b.set(3, 1, FieldState.Red)
     b.set(3, 2, FieldState.Red)
     b.set(2, 2, FieldState.Obstructed)
+    return b
+
+def test_basic():
+    b = createSimpleBoard()
 
     expected = """  B B  
 R   O R
@@ -56,5 +61,17 @@ R     R
   B B  """
 
     assert repr(b) == expected
+
+def test_fish_count_all():
+    b = createSimpleBoard()
+    assert b.fishCount() == 8
+
+def test_fish_count_red():
+    b = createSimpleBoard()
+    assert b.fishCount(Player.Red) == 4
+
+def test_fish_count_blue():
+    b = createSimpleBoard()
+    assert b.fishCount(Player.Blue) == 4
 
 # -*- encoding: utf-8-unix -*-

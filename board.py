@@ -1,4 +1,5 @@
 import enum, lxml.etree
+from itertools import chain
 
 """
 Board of Piranhas game.
@@ -60,6 +61,13 @@ class Board:
 
     def copy(self):
         pass
+
+    def fishCount(self, player=None):
+        if player is not None:
+            searchedFields = {FieldState(player.value)}
+        else:
+            searchedFields = {FieldState.Red, FieldState.Blue}
+        return sum(chain.from_iterable((1 for field in row if field in searchedFields) for row in self.fields))
 
     def __repr__(self):
         return "\n".join(" ".join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
