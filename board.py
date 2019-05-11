@@ -7,25 +7,12 @@ from lxml.builder import E
 
 
 class FieldState(enum.Enum):
-    Empty = enum.auto()
-    Red = enum.auto()
-    Blue = enum.auto()
-    Obstructed = enum.auto()
+    Empty = 'EMPTY'
+    Red = 'RED'
+    Blue = 'BLUE'
+    Obstructed = 'OBSTRUCTED'
 
-    @classmethod
-    def fromString(cls, value):
-        if value == 'EMPTY':
-            return cls.Empty
-        elif value == 'RED':
-            return cls.Red
-        elif value == 'BLUE':
-            return cls.Blue
-        elif value == 'OBSTRUCTED':
-            return cls.Obstructed
-        else:
-            raise ValueError('unknown field state: {}'.format(value))
-
-    def __repr__(self):
+    def asChar(self):
         if self is FieldState.Empty:
             return ' '
         elif self is FieldState.Red:
@@ -61,7 +48,7 @@ class PiranhasBoard:
             board.set(
                 int(fieldNode.get('x')),
                 int(fieldNode.get('y')),
-                FieldState.fromString(fieldNode.get('state'))
+                FieldState(fieldNode.get('state'))
             )
 
         return board
@@ -76,4 +63,4 @@ class PiranhasBoard:
         pass
 
     def __repr__(self):
-        return "\n".join(" ".join(repr(self.get(x, y)) for x in range(self.columns)) for y in reversed(range(self.rows)))
+        return "\n".join(" ".join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
