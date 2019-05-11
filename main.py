@@ -2,12 +2,13 @@
 # -*- encoding: utf-8-unix -*-
 
 import argparse, asyncio, logging
+from agent import PiranhasAgent
 from protocol import PiranhasClient
 
 
-def runGameserver(host, port, reservation):
+def runGameclient(host, port, agent, reservation):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(PiranhasClient(loop, host, port, reservation))
+    loop.run_until_complete(PiranhasClient(loop, host, port, agent, reservation))
     loop.close()
 
 def main():
@@ -20,7 +21,9 @@ def main():
     parser.add_argument('--reservation', '-r', help='reservation number')
     args, _unknown = parser.parse_known_args()
 
-    runGameserver(args.host, args.port, args.reservation)
+    agent = ai.PiranhasAgent()
+
+    runGameclient(args.host, args.port, agent, args.reservation)
 
 
 if __name__ == '__main__':

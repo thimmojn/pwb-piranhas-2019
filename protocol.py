@@ -4,6 +4,8 @@
 
 import asyncio, logging, lxml.etree
 from lxml.builder import E
+from memento import Memento
+from player import Player
 
 
 def sendXML(writer, message):
@@ -11,8 +13,9 @@ def sendXML(writer, message):
 
 
 @asyncio.coroutine
-def PiranhasClient(loop, host, port, reservation=None):
+def PiranhasClient(loop, host, port, agent, reservation=None):
     room = None
+    player = None
 
     # build join message
     if reservation is not None:
@@ -61,8 +64,36 @@ def PiranhasClient(loop, host, port, reservation=None):
                 # communication end
                 logging.info('gameserver send goodbye')
             elif element.tag == 'room':
-                # game events
-                print(element)
+                # matches room identifier?
+                if element.get('roomId') == room:
+                    # game events
+                    dataNode = element.get('data')
+                    dataClass = dataNode.get('class')
+                    if dataClass == 'sc.framework.plugins.protocol.MoveRequest':
+                        # move request
+                        logging.info('move requested')
+                        # request move from agent
+                        move = agent.requestMove()
+                        # agent is allowed to return None (in development phase)
+                        if move is not None:
+                            # send to game server
+                            response = E.room(roomId=room)
+                            response.append(move.toXML())
+                            sendXML(writer, response)
+                    elif dataClass == 'welcomeMessage':
+                        # receive my color
+                        if player it not None:
+                            logging.warning('unexpected welcome message, ignore it')
+                        else:
+                            # send to agent
+                            player = Player(dataNode.get('color').upper())
+                            agent.setPlayer(player)
+                    elif dataClass == 'memento':
+                        # update memento
+                        memento = Memento.fromXML(dataNode)
+                        agent.updateMemento(memento)
+                else:
+                    logging.info('received message for another room')
                 element.clear()
     # server closed communication, close parser
     parser.close()
