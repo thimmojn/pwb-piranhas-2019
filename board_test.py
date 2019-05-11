@@ -15,7 +15,7 @@ def test_representation():
     b.set(3, 2, FieldState.Red)
     b.set(2, 2, FieldState.Obstructed)
 
-    expected = """  B B
+    expected = """  B B  
 R   O R
 R     R
   B B  """
