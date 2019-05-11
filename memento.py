@@ -1,14 +1,11 @@
 import enum, lxml.etree
 from board import Board
 from move import Move
+from player import Player
 
 """
 Game state.
 """
-
-class Player(enum.Enum):
-    Red = 'RED'
-    Blue = 'BLUE'
 
 
 class Memento:
