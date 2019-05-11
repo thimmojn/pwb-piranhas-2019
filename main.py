@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--reservation', '-r', help='reservation number')
     args, _unknown = parser.parse_known_args()
 
-    agent = ai.PiranhasAgent()
+    agent = PiranhasAgent()
 
     runGameclient(args.host, args.port, agent, args.reservation)
 

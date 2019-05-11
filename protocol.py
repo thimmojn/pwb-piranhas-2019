@@ -82,7 +82,7 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
                             sendXML(writer, response)
                     elif dataClass == 'welcomeMessage':
                         # receive my color
-                        if player it not None:
+                        if player is not None:
                             logging.warning('unexpected welcome message, ignore it')
                         else:
                             # send to agent
