@@ -22,7 +22,7 @@ class FieldState(enum.Enum):
         elif self is FieldState.Obstructed:
             return 'O'
         else:
-            raise ValueError('no representation for {} given'.format(self.name))
+            raise ValueError('no character for {} given'.format(self.name))
 
 
 class PiranhasBoard:
