@@ -64,6 +64,7 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
                 # communication end
                 logging.info('gameserver send goodbye')
             elif element.tag == 'room':
+                logging.debug(lxml.etree.tostring(element))
                 # matches room identifier?
                 if element.get('roomId') == room:
                     # game events
