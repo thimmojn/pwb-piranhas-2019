@@ -22,7 +22,7 @@ class PiranhasAgent:
         # find fish, which can move
         myFish = [
             (x, y)
-            for x in range(board.colums)
+            for x in range(board.columns)
             for y in range(board.rows)
             if board.get(x, y).occupiedBy(self.me)
             and len(board.possibleMoves(x, y)) > 0
