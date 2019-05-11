@@ -16,6 +16,25 @@ class MoveDirection(enum.Enum):
     Left = 'LEFT'
     UpLeft = 'UP_LEFT'
 
+    @property
+    def shift(self):
+        if self is MoveDirection.Up:
+            return (0, 1)
+        elif self is MoveDirection.UpRight:
+            return (1, 1)
+        elif self is MoveDirection.Right:
+            return (1, 0)
+        elif self is MoveDirection.DownRight:
+            return (1, -1)
+        elif self is MoveDirection.Down:
+            return (0, -1)
+        elif self is MoveDirection.DownLeft:
+            return (-1, -1)
+        elif self is MoveDirection.Left:
+            return (-1, 0)
+        elif self is MoveDirection.UpLeft:
+            return (-1, 1)
+
 
 class Move:
     def __init__(self, x, y, direction):

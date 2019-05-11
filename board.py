@@ -1,5 +1,7 @@
 import enum, lxml.etree
+from functools import partial
 from itertools import chain
+from move import MoveDirection
 
 """
 Board of Piranhas game.
@@ -11,6 +13,10 @@ class FieldState(enum.Enum):
     Red = 'RED'
     Blue = 'BLUE'
     Obstructed = 'OBSTRUCTED'
+
+    def occupiedBy(self, player):
+        return (player is not None and self is FieldState(player.value)) \
+            or (player is None and self in {FieldState.Red, FieldState.Blue})
 
     def asChar(self):
         if self is FieldState.Empty:
@@ -65,12 +71,53 @@ class Board:
     def copy(self):
         pass
 
+    @staticmethod
+    def fishCounter(fields, player=None):
+        return sum(1 for field in fields if field.occupiedBy(player))
+
     def fishCount(self, player=None):
-        if player is not None:
-            searchedFields = {FieldState(player.value)}
-        else:
-            searchedFields = {FieldState.Red, FieldState.Blue}
-        return sum(chain.from_iterable((1 for field in row if field in searchedFields) for row in self.fields))
+        return Board.fishCounter(chain.from_iterable(self.fields), player)
+
+    def iterateFields(self, origin, direction, until=lambda _x, _y: False):
+        x, y = origin
+        shiftX, shiftY = direction
+        while self.isValidCoordinate(x, y) and not until(x, y):
+            yield self.get(x, y)
+            x, y = x + shiftX, y + shiftY
+
+    def movePossible(self, x, y, direction):
+        if not self.get(x, y).occupiedBy(None):
+            # field not occupied by a player, no move is possible
+            return False
+
+        directionShift = direction.shift
+        inverseShift = (-directionShift[0], -directionShift[1])
+        # steps are the sum of fish on a line across board constructed by direction
+        # fish at origin is counted twice
+        steps = Board.fishCounter(self.iterateFields((x, y), directionShift)) \
+            + Board.fishCounter(self.iterateFields((x, y), inverseShift)) \
+            - 1
+        # calculate target coordinates given by steps in direction
+        target = (x + steps * directionShift[0], y + steps * directionShift[1])
+
+        # check if move ends outside board or on a field with an obstructed
+        if not self.isValidCoordinate(*target) or self.get(*target) is FieldState.Obstructed:
+            return False
+
+        # check if there is a enemy fish in the way
+        if any(
+                # occupied fields with not own fish are enemies
+                f.occupiedBy(None) and f is not self.get(x, y)
+                # search until target reached, target will be skipped
+                for f in self.iterateFields((x, y), directionShift, lambda fx, fy: (fx, fy) == target)
+        ):
+            return False
+
+        # otherwise move is allowed
+        return True
+
+    def possibleMoves(self, x, y):
+        return list(filter(partial(self.movePossible, x, y), MoveDirection))
 
     def __repr__(self):
         return "\n".join(" ".join(self.get(x, y).asChar() for x in range(self.columns)) for y in reversed(range(self.rows)))
