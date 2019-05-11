@@ -6,7 +6,7 @@ Agent for Piranhas.
 """
 
 
-def PiranhasAgent:
+class PiranhasAgent:
     def __init__(self):
         self.me = None
         self.memento = None
