@@ -28,8 +28,8 @@ class Memento:
         stateNode = mementoNode.find('state')
 
         turn = int(stateNode.get('turn'))
-        startPlayer = Player(stateNode.get('startPlayer'))
-        currentPlayer = Player(stateNode.get('currentPlayer'))
+        startPlayer = Player(stateNode.get('startPlayerColor'))
+        currentPlayer = Player(stateNode.get('currentPlayerColor'))
 
         playerNames = dict(
             (p, Memento.__getPlayerName(stateNode, p))
