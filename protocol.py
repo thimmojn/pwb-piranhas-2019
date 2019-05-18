@@ -40,7 +40,11 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
     parser = lxml.etree.XMLPullParser(events=('end',))
     while not reader.at_eof():
         # read next tag
-        data = yield from reader.readuntil(b'>')
+        try:
+            data = yield from reader.readuntil(b'>')
+        except asyncio.IncompleteReadError:
+            # no more tags read
+            data = b''
         logging.debug('get: %s', data.decode())
         # feed to XML parser
         parser.feed(data)
@@ -51,19 +55,7 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
             # closed element
             element = event[1]
             logging.debug('XML tag closed: %s', element.tag)
-            if element.tag == 'joined':
-                # joined event
-                if room is not None:
-                    logging.warning('unexpected joined event, ignore it')
-                else:
-                    # save room identifier
-                    room = element.get('roomId')
-                    logging.info('joined room %s', room)
-                element.clear()
-            elif element.tag == 'protocol':
-                # communication end
-                logging.info('gameserver send goodbye')
-            elif element.tag == 'room':
+            if element.tag == 'room':
                 logging.debug(lxml.etree.tostring(element))
                 # matches room identifier?
                 if element.get('roomId') == room:
@@ -96,5 +88,26 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
                 else:
                     logging.info('received message for another room')
                 element.clear()
+            elif element.tag == 'joined':
+                # joined event
+                if room is not None:
+                    logging.warning('unexpected joined event, ignore it')
+                else:
+                    # save room identifier
+                    room = element.get('roomId')
+                    logging.info('joined room %s', room)
+                element.clear()
+            elif element.tag == 'left':
+                # client left event
+                # is event for my room?
+                if element.get('roomId') == room:
+                    # end communication
+                    writer.write(b'</protocol>')
+                else:
+                    logging.info('some client left another room')
+                element.clear()
+            elif element.tag == 'protocol':
+                # communication end
+                logging.info('gameserver send goodbye')
     # server closed communication, close parser
     parser.close()
