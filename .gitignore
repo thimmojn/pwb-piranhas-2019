@@ -1,6 +1,8 @@
 *~
 __pycache__/
+/external/
 /venv/
 /doc/EndbenutzerDokumentation.pdf
 /doc/Spielregeln.pdf
 /doc/XMLDokumentation.pdf
+/piranhas-agent.zip
