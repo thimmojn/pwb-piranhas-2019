@@ -27,9 +27,9 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
 
     # connect to gameserver
     reader, writer = yield from asyncio.open_connection(host, port, loop=loop)
-    logging.info('connected to gameserver')
+    logging.info('connected to gameserver %s:%d', host, port)
 
-    logging.info('join game')
+    logging.info('join game (%s)', 'prepared' if reservation is not None else 'new')
     # initiate communication
     writer.write(b'<protocol>')
     # and join
