@@ -20,7 +20,7 @@ def PiranhasClient(loop, host, port, agent, reservation=None):
     # build join message
     if reservation is not None:
         # join to existing room by reservation
-        joinMessage = E.joinedPrepared(reservationCode=reservation)
+        joinMessage = E.joinPrepared(reservationCode=reservation)
     else:
         # join to existing game or create a new one
         joinMessage = E.join(gameType='swc_2019_piranhas')
