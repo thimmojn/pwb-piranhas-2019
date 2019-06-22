@@ -2,6 +2,9 @@ import lxml.etree
 from move import Move, MoveDirection
 
 
+def test_direction_inverse():
+    assert all(d.inverse.inverse == d for d in MoveDirection)
+
 def test_move_repr():
     aMove = Move(0, 0, MoveDirection.UpLeft)
     assert repr(aMove) == '(0,0) -> UpLeft'
