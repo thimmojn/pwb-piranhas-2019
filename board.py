@@ -1,7 +1,8 @@
 import enum, lxml.etree
-from functools import partial
+from functools import partial, reduce
 from itertools import chain
 from move import MoveDirection
+from player import Player
 
 """
 Board of Piranhas game.
@@ -23,8 +24,14 @@ class FieldState(enum.Enum):
         return FieldStateCharMapping.get(self)
 
     def occupiedBy(self, player):
-        return (player is not None and self is FieldState(player.value)) \
-            or (player is None and self in {FieldState.Red, FieldState.Blue})
+        fieldPlayer = self.toPlayer()
+        return fieldPlayer is not None and (player is fieldPlayer or player is None)
+
+    def toPlayer(self):
+        try:
+            return Player(self.value)
+        except ValueError:
+            return None
 
 # assign field state a character (for testing and debugging)
 FieldStateCharMapping = {
@@ -133,6 +140,19 @@ class Board:
 
     def possibleMoves(self, x, y):
         return list(filter(partial(self.movePossible, x, y), MoveDirection))
+
+    def __determineSwarm(self, origin, player=None, swarm=[]):
+        if self.get(*origin).occupiedBy(player) and origin not in swarm:
+            return reduce(
+                lambda s, d: self.__determineSwarm(d + origin, self.get(*origin).toPlayer(), s),
+                {*swarm, origin}
+            )
+        else:
+            return swarm
+
+    def swarmSize(self, x, y, player=None):
+        swarm = self.__determineSwarm((x, y), player)
+        return len(swarm)
 
     def __repr__(self):
         return '\n'.join(''.join(self.get(x, y).char for x in range(self.columns)) for y in reversed(range(self.rows)))

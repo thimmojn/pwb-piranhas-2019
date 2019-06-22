@@ -144,4 +144,8 @@ _RRRR_
     assert b.possibleMoves(1, 0) == [MoveDirection.Up, MoveDirection.UpRight, MoveDirection.Right]
     assert b.possibleMoves(4, 2) == [MoveDirection.Left]
 
+def test_swarm_size():
+    b, _repr = createSimpleBoard()
+    assert b.swarmSize(0, 1) == 2
+
 # -*- encoding: utf-8-unix -*-
