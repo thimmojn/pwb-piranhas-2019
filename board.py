@@ -93,24 +93,22 @@ class Board:
 
     def iterateFields(self, origin, direction, until=lambda _x, _y: False):
         x, y = origin
-        shiftX, shiftY = direction
         while self.isValidCoordinate(x, y) and not until(x, y):
             yield self.get(x, y)
-            x, y = x + shiftX, y + shiftY
+            x, y = direction + (x, y)
 
     def movePossible(self, x, y, direction):
         if not self.get(x, y).occupiedBy(None):
             # field not occupied by a player, no move is possible
             return False
 
-        directionShift = direction.shift
-        inverseShift = (-directionShift[0], -directionShift[1])
         # steps are the sum of fish on a line across board constructed by direction
         # fish at origin is counted twice
-        steps = Board.fishCounter(self.iterateFields((x, y), directionShift)) \
-            + Board.fishCounter(self.iterateFields((x, y), inverseShift)) \
+        steps = Board.fishCounter(self.iterateFields((x, y), direction)) \
+            + Board.fishCounter(self.iterateFields((x, y), direction.inverse)) \
             - 1
         # calculate target coordinates given by steps in direction
+        directionShift = direction.shift
         target = (x + steps * directionShift[0], y + steps * directionShift[1])
 
         # check if move ends outside board
@@ -126,7 +124,7 @@ class Board:
                 # occupied fields with not own fish are enemies
                 f.occupiedBy(None) and f is not self.get(x, y)
                 # search until target reached, target will be skipped
-                for f in self.iterateFields((x, y), directionShift, lambda fx, fy: (fx, fy) == target)
+                for f in self.iterateFields((x, y), direction, lambda fx, fy: (fx, fy) == target)
         ):
             return False
 
