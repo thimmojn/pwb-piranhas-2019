@@ -61,7 +61,7 @@ class Board:
         rows = max(int(n.get('y')) for n in iterFields(boardNode)) + 1
         board = cls(columns, rows)
         for fieldNode in iterFields(boardNode):
-            board.set(
+            board.stateSet(
                 int(fieldNode.get('x')),
                 int(fieldNode.get('y')),
                 FieldState(fieldNode.get('state'))
@@ -76,16 +76,16 @@ class Board:
         board = cls(columns, rows)
         for x in range(columns):
             for y in range(rows):
-                board.set(x, y, FieldState.byChar(fields[rows - y - 1][x]))
+                board.stateSet(x, y, FieldState.byChar(fields[rows - y - 1][x]))
         return board
 
     def isValidCoordinate(self, x, y):
         return x >= 0 and x < self.columns and y >= 0 and y < self.rows
 
-    def get(self, x, y):
+    def stateAt(self, x, y):
         return self.fields[x][y]
 
-    def set(self, x, y, state):
+    def stateSet(self, x, y, state):
         self.fields[x][y] = state
 
     def copy(self):
@@ -98,14 +98,22 @@ class Board:
     def fishCount(self, player=None):
         return Board.fishCounter(chain.from_iterable(self.fields), player)
 
+    def fishCoordinates(self, player=None):
+        """Generator of coordinates of fish by player."""
+        for x in range(self.columns):
+            for y in range(self.rows):
+                field = self.stateAt(x, y)
+                if field.occupiedBy(player):
+                    yield (field.toPlayer(), x, y)
+
     def iterateFields(self, origin, direction, until=lambda _x, _y: False):
         x, y = origin
         while self.isValidCoordinate(x, y) and not until(x, y):
-            yield self.get(x, y)
+            yield self.stateAt(x, y)
             x, y = direction + (x, y)
 
     def movePossible(self, x, y, direction):
-        if not self.get(x, y).occupiedBy(None):
+        if not self.stateAt(x, y).occupiedBy(None):
             # field not occupied by a player, no move is possible
             return False
 
@@ -122,14 +130,14 @@ class Board:
         # or on a field with an obstructed
         # or on a field with an own fish
         if not self.isValidCoordinate(*target) \
-           or self.get(*target) is FieldState.Obstructed \
-           or self.get(*target) is self.get(x, y):
+           or self.stateAt(*target) is FieldState.Obstructed \
+           or self.stateAt(*target) is self.stateAt(x, y):
             return False
 
         # check if there is a enemy fish in the way
         if any(
                 # occupied fields with not own fish are enemies
-                f.occupiedBy(None) and f is not self.get(x, y)
+                f.occupiedBy(None) and f is not self.stateAt(x, y)
                 # search until target reached, target will be skipped
                 for f in self.iterateFields((x, y), direction, lambda fx, fy: (fx, fy) == target)
         ):
@@ -141,20 +149,39 @@ class Board:
     def possibleMoves(self, x, y):
         return list(filter(partial(self.movePossible, x, y), MoveDirection))
 
-    def __determineSwarm(self, origin, player=None, swarm=[]):
-        if self.get(*origin).occupiedBy(player) and origin not in swarm:
+    def __determineSwarm(self, origin, player, swarm=set()):
+        # a swarm member must have a valid coordinate,
+        # owned by given player
+        # and not already part of it
+        if self.isValidCoordinate(*origin) and self.stateAt(*origin).occupiedBy(player) and origin not in swarm:
+            # add fish to swarm and search for other members in neighborhood
             return reduce(
-                lambda s, d: self.__determineSwarm(d + origin, self.get(*origin).toPlayer(), s),
+                lambda s, d: self.__determineSwarm(d + origin, player, s),
+                MoveDirection,
                 {*swarm, origin}
             )
         else:
+            # otherwise stop recursion and return accumulator
             return swarm
 
-    def swarmSize(self, x, y, player=None):
-        swarm = self.__determineSwarm((x, y), player)
-        return len(swarm)
+    def swarmAt(self, x, y):
+        return self.__determineSwarm((x, y), self.stateAt(x, y).toPlayer())
+
+    def swarmSize(self, x, y):
+        return len(self.swarmAt(x, y))
+
+    def swarms(self, player=None):
+        fish = set(self.fishCoordinates(player))
+        while fish:
+            fishPlayer, x, y = next(iter(fish))
+            aSwarm = self.__determineSwarm((x, y), fishPlayer)
+            yield aSwarm
+            fish -= {(fishPlayer, *f) for f in aSwarm}
+
+    def swarmCount(self, player=None):
+        return sum(1 for s in self.swarms(player))
 
     def __repr__(self):
-        return '\n'.join(''.join(self.get(x, y).char for x in range(self.columns)) for y in reversed(range(self.rows)))
+        return '\n'.join(''.join(self.stateAt(x, y).char for x in range(self.columns)) for y in reversed(range(self.rows)))
 
 # -*- encoding: utf-8-unix -*-

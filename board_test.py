@@ -15,15 +15,15 @@ _BB_
 
 def test_basic():
     b = Board(4, 4)
-    b.set(1, 0, FieldState.Blue)
-    b.set(2, 0, FieldState.Blue)
-    b.set(1, 3, FieldState.Blue)
-    b.set(2, 3, FieldState.Blue)
-    b.set(0, 1, FieldState.Red)
-    b.set(0, 2, FieldState.Red)
-    b.set(3, 1, FieldState.Red)
-    b.set(3, 2, FieldState.Red)
-    b.set(2, 2, FieldState.Obstructed)
+    b.stateSet(1, 0, FieldState.Blue)
+    b.stateSet(2, 0, FieldState.Blue)
+    b.stateSet(1, 3, FieldState.Blue)
+    b.stateSet(2, 3, FieldState.Blue)
+    b.stateSet(0, 1, FieldState.Red)
+    b.stateSet(0, 2, FieldState.Red)
+    b.stateSet(3, 1, FieldState.Red)
+    b.stateSet(3, 2, FieldState.Red)
+    b.stateSet(2, 2, FieldState.Obstructed)
 
     expected = """
 _BB_
@@ -147,5 +147,14 @@ _RRRR_
 def test_swarm_size():
     b, _repr = createSimpleBoard()
     assert b.swarmSize(0, 1) == 2
+    assert b.swarmAt(0, 1) == {(0, 1), (0, 2)}
+
+def test_swarm_count():
+    b, _repr = createSimpleBoard()
+    assert b.swarmCount() == 4
+
+def test_swarm_count_player():
+    b, _repr = createSimpleBoard()
+    assert b.swarmCount(Player.Red) == 2
 
 # -*- encoding: utf-8-unix -*-
