@@ -88,8 +88,18 @@ class Board:
     def stateSet(self, x, y, state):
         self.fields[x][y] = state
 
+    def move(self, fish, direction):
+        target = direction + fish
+        self.stateSet(*target, self.stateAt(*fish))
+        self.stateSet(*fish, FieldState.Empty)
+        return target
+
     def copy(self):
-        pass
+        board = Board(self.columns, self.rows)
+        for x in range(self.columns):
+            for y in range(self.rows):
+                board.stateSet(x, y, self.stateAt(x, y))
+        return board
 
     @staticmethod
     def fishCounter(fields, player=None):
@@ -164,11 +174,11 @@ class Board:
             # otherwise stop recursion and return accumulator
             return swarm
 
-    def swarmAt(self, x, y):
-        return self.__determineSwarm((x, y), self.stateAt(x, y).toPlayer())
+    def swarmAt(self, coordinate):
+        return self.__determineSwarm(coordinate, self.stateAt(*coordinate).toPlayer())
 
-    def swarmSize(self, x, y):
-        return len(self.swarmAt(x, y))
+    def swarmSize(self, coordinate):
+        return len(self.swarmAt(coordinate))
 
     def swarms(self, player=None):
         fish = set(self.fishCoordinates(player))

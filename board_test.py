@@ -146,8 +146,8 @@ _RRRR_
 
 def test_swarm_size():
     b, _repr = createSimpleBoard()
-    assert b.swarmSize(0, 1) == 2
-    assert b.swarmAt(0, 1) == {(0, 1), (0, 2)}
+    assert b.swarmSize((0, 1)) == 2
+    assert b.swarmAt((0, 1)) == {(0, 1), (0, 2)}
 
 def test_swarm_count():
     b, _repr = createSimpleBoard()
