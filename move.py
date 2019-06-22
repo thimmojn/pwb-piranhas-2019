@@ -54,6 +54,10 @@ class MoveDirection(enum.Enum):
         elif self is MoveDirection.UpLeft:
             return MoveDirection.DownRight
 
+    def __add__(self, coordinate):
+        incX, incY = self.shift
+        return coordinate[0] + incX, coordinate[1] + incY
+
 
 class Move:
     def __init__(self, x, y, direction):
