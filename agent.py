@@ -32,46 +32,49 @@ class PiranhasAgent:
     def distanceScore(a, b):
         return math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
-    def myCenter(self):
-        swarms = self.memento.board.swarms(self.me)
-        # center of swarm centers
-        return PiranhasAgent.fishCenter(PiranhasAgent.fishCenter(s) for s in swarms)
-
-    def moveScore(self, currentCenter, currentSwarms, fishSwarmSize, fish, direction):
-        score = 0
-        testBoard = self.memento.board.copy()
-        target = testBoard.move(fish, direction)
-        if PiranhasAgent.distanceScore(target, currentCenter) < PiranhasAgent.distanceScore(fish, currentCenter):
-            score += 1
-        if testBoard.swarmSize(target) > fishSwarmSize:
-            score += 1 if self.memento.turn >= 30 else 0
-        if testBoard.swarmCount() < currentSwarms:
-            score += 2 if self.memento.turn >= 50 else 0
-        return score
-
     def requestMove(self):
         board = self.memento.board
 
-        currentCenter = self.myCenter()
-        currentSwarms = board.swarmCount(self.me)
-        logging.info('current center: %f,%f', currentCenter[0], currentCenter[1])
+        # get current situation
+        mySwarms = list(board.swarms(self.me))
+        currentSwarmCount = len(mySwarms)
+        swarmsCenter = PiranhasAgent.fishCenter(PiranhasAgent.fishCenter(s) for s in mySwarms)
 
-        myFish = [
-            ((x, y), board.swarmSize((x, y)), board.possibleMoves(x, y))
-            for (_p, x, y) in board.fishCoordinates(self.me)
-        ]
+        # create copy of current board for move evaluation
+        evalBoard = board.copy()
 
-        allMoves = list(chain.from_iterable(
-            ((fish, m, self.moveScore(currentCenter, currentSwarms, swarmSize, fish, m)) for m in moves)
-            for (fish, swarmSize, moves) in myFish
-        ))
+        bestMoveScore = 0
+        bestMove = None
 
-        scoreSum = sum(m[2] for m in allMoves)
-        selectScore = random.randrange(scoreSum)
-        i = 0
-        for m in allMoves:
-            i += m[2]
-            if i >= selectScore:
-                return Move(m[0][0], m[0][1], m[1])
+        # iterate fish (in swarms)
+        for swarm in mySwarms:
+            swarmSize = len(swarm)
+            swarmCenter = PiranhasAgent.distanceScore(PiranhasAgent.fishCenter(swarm), swarmsCenter)
+            for fish in swarm:
+                # iterate possible moves of fish
+                for direction in board.possibleMoves(*fish):
+                    target = evalBoard.move(fish, direction)
+                    # fish to center of swarms
+                    distributionChange = PiranhasAgent.distanceScore(fish, swarmsCenter) \
+                                         - PiranhasAgent.distanceScore(target, swarmsCenter)
+                    targetSwarm = evalBoard.swarmAt(target)
+                    if evalBoard.swarmCount(self.me) == 1:
+                        # one swarm is good
+                        distributionChange *= 10
+                    elif swarmCenter < 2:
+                        # not move fish, if in a swarm near center
+                        distributionChange *= 0.6
+                    elif len(targetSwarm) > swarmSize:
+                        # hold fish together
+                        distributionChange *= 1.7 if swarmSize == 1 else 1.2
+                    # reset evaluation board
+                    evalBoard.stateSet(*fish, board.stateAt(*fish))
+                    evalBoard.stateSet(*target, board.stateAt(*target))
+                    # find best move
+                    if distributionChange > bestMoveScore:
+                        bestMoveScore = distributionChange
+                        bestMove = Move(*fish, direction)
+
+        return bestMove
 
 # -*- encoding: utf-8-unix -*-
