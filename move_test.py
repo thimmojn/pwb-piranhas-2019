@@ -9,6 +9,13 @@ def test_direction_add():
     assert MoveDirection.Left + (2, 3) == (1, 3)
     assert MoveDirection.DownRight + (3, 2) == (4, 1)
 
+def test_direction_add_immutable():
+    direction = MoveDirection.UpRight
+    coordinate = (5, 0)
+    result = direction + coordinate
+    assert coordinate == (5, 0)
+    assert result == (6, 1)
+
 def test_move_repr():
     aMove = Move(0, 0, MoveDirection.UpLeft)
     assert repr(aMove) == '(0,0) -> UpLeft'
