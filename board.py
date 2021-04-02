@@ -122,42 +122,76 @@ class Board:
             yield self.stateAt(x, y)
             x, y = direction + (x, y)
 
-    def movePossible(self, x, y, direction):
-        if not self.stateAt(x, y).occupiedBy(None):
+    def fishCountLine(self, origin, direction):
+        # steps are the sum of fish on a line across board constructed by direction
+        # fish at origin is counted twice
+        return Board.fishCounter(self.iterateFields(origin, direction)) \
+            + Board.fishCounter(self.iterateFields(origin, direction.inverse)) \
+            - 1
+
+    def movePossible(self, origin, direction):
+        if not self.stateAt(*origin).occupiedBy(None):
             # field not occupied by a player, no move is possible
             return False
 
         # steps are the sum of fish on a line across board constructed by direction
         # fish at origin is counted twice
-        steps = Board.fishCounter(self.iterateFields((x, y), direction)) \
-            + Board.fishCounter(self.iterateFields((x, y), direction.inverse)) \
-            - 1
+        steps = self.fishCountLine(origin, direction)
         # calculate target coordinates given by steps in direction
-        directionShift = direction.shift
-        target = (x + steps * directionShift[0], y + steps * directionShift[1])
+        target = direction * steps + origin
 
         # check if move ends outside board
         # or on a field with an obstructed
         # or on a field with an own fish
         if not self.isValidCoordinate(*target) \
            or self.stateAt(*target) is FieldState.Obstructed \
-           or self.stateAt(*target) is self.stateAt(x, y):
+           or self.stateAt(*target) is self.stateAt(*origin):
             return False
 
         # check if there is a enemy fish in the way
         if any(
                 # occupied fields with not own fish are enemies
-                f.occupiedBy(None) and f is not self.stateAt(x, y)
+                f.occupiedBy(None) and f is not self.stateAt(*origin)
                 # search until target reached, target will be skipped
-                for f in self.iterateFields((x, y), direction, lambda fx, fy: (fx, fy) == target)
+                for f in self.iterateFields(origin, direction, lambda fx, fy: (fx, fy) == target)
         ):
             return False
 
         # otherwise move is allowed
         return True
 
-    def possibleMoves(self, x, y):
-        return list(filter(partial(self.movePossible, x, y), MoveDirection))
+    def possibleMoves(self, coordinate):
+        return list(filter(partial(self.movePossible, coordinate), MoveDirection))
+
+    def movableFishTo(self, coordinate):
+        # player of fish on coordinate (can be indifferent)
+        originPlayer = self.stateAt(*coordinate).toPlayer()
+        # search for fish in all directions
+        for d in MoveDirection:
+            # steps for this move direction
+            fishCount = self.fishCountLine(coordinate, d)
+            intermediatePlayer = None
+            # search until steps reached
+            for distance in range(1, fishCount + 1):
+                target = direction * distance + coordinate
+                field = self.stateAt(*target)
+                # stop searching if outside board
+                if not self.isValidCoordinate(target) or (
+                        field.occupiedBy(originPlayer)
+                        and (
+                            # fish cannot move on a field with a fish from same player
+                            # and enemy fish cannot be jumped over
+                            originPlayer is not None
+                            # there is no enemy in the way allowed
+                            or (
+                                intermediatePlayer is not None
+                                and not field.occupiedBy(intermediatePlayer)))):
+                    break
+                if distance == fishCount and field.occupiedBy(None):
+                    # distance reached, possible fish is allowed to move
+                    yield target
+                # remember first intermediate player for next fields
+                intermediatePlayer = intermediatePlayer or field.toPlayer()
 
     def __determineSwarm(self, origin, player, swarm=set()):
         # a swarm member must have a valid coordinate,

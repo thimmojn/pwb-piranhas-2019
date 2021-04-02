@@ -58,6 +58,10 @@ class MoveDirection(enum.Enum):
         incX, incY = self.shift
         return coordinate[0] + incX, coordinate[1] + incY
 
+    def __mul__(self, factor):
+        incX, incY = self.shift
+        return factor * incX, factor * incY
+
 
 class Move:
     def __init__(self, x, y, direction):

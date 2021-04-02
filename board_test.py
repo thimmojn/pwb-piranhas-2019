@@ -107,11 +107,11 @@ def test_fish_count_blue():
 
 def test_possible_move_simple():
     b, _ = createSimpleBoard()
-    assert b.movePossible(0, 1, MoveDirection.Right)
-    assert b.movePossible(3, 2, MoveDirection.Down)
-    assert not b.movePossible(0, 1, MoveDirection.DownLeft)
-    assert not b.movePossible(3, 2, MoveDirection.UpRight)
-    assert not b.movePossible(1, 1, MoveDirection.Up)
+    assert b.movePossible((0, 1), MoveDirection.Right)
+    assert b.movePossible((3, 2), MoveDirection.Down)
+    assert not b.movePossible((0, 1), MoveDirection.DownLeft)
+    assert not b.movePossible((3, 2), MoveDirection.UpRight)
+    assert not b.movePossible((1, 1), MoveDirection.Up)
 
 def test_possible_move_advanced():
     b = Board.fromString("""
@@ -122,14 +122,14 @@ B___RB
 B____B
 _RRRR_
 """.strip())
-    assert b.movePossible(5, 3, MoveDirection.UpLeft)
-    assert b.movePossible(3, 3, MoveDirection.Down)
-    assert b.movePossible(3, 3, MoveDirection.Left)
-    assert b.movePossible(1, 0, MoveDirection.UpRight)
-    assert not b.movePossible(3, 3, MoveDirection.Right)
-    assert not b.movePossible(5, 3, MoveDirection.Left)
-    assert not b.movePossible(5, 2, MoveDirection.Left)
-    assert not b.movePossible(5, 1, MoveDirection.UpLeft)
+    assert b.movePossible((5, 3), MoveDirection.UpLeft)
+    assert b.movePossible((3, 3), MoveDirection.Down)
+    assert b.movePossible((3, 3), MoveDirection.Left)
+    assert b.movePossible((1, 0), MoveDirection.UpRight)
+    assert not b.movePossible((3, 3), MoveDirection.Right)
+    assert not b.movePossible((5, 3), MoveDirection.Left)
+    assert not b.movePossible((5, 2), MoveDirection.Left)
+    assert not b.movePossible((5, 1), MoveDirection.UpLeft)
 
 def test_possible_moves():
     b = Board.fromString("""
@@ -140,9 +140,9 @@ B___RB
 B____B
 _RRRR_
 """.strip())
-    assert b.possibleMoves(1, 1) == []
-    assert b.possibleMoves(1, 0) == [MoveDirection.Up, MoveDirection.UpRight, MoveDirection.Right]
-    assert b.possibleMoves(4, 2) == [MoveDirection.Left]
+    assert b.possibleMoves((1, 1)) == []
+    assert b.possibleMoves((1, 0)) == [MoveDirection.Up, MoveDirection.UpRight, MoveDirection.Right]
+    assert b.possibleMoves((4, 2)) == [MoveDirection.Left]
 
 def test_swarm_size():
     b, _repr = createSimpleBoard()
