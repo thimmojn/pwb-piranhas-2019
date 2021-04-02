@@ -11,7 +11,7 @@ elif ! python3 checklxml.py; then
     python -m venv ./venv
     source ./venv/bin/activate
     echo "install lxml" >&2
-    pip install -q --cache-dir ./.pip ./external/lxml-4.3.4-cp36-cp36m-manylinux1_x86_64.whl >&2
+    pip install -q --cache-dir ./.pip ./external/lxml-4.6.3-cp39-cp39-manylinux1_x86_64.whl >&2
 fi
 
 python3 ./main.py $@
